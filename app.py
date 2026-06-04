@@ -1,10 +1,11 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
 import csv
 import os
+import tkinter as tk
 from datetime import datetime
+from tkinter import messagebox, ttk
 
 CSV_FILE = os.path.join(os.path.dirname(__file__), "entries.csv")
+
 
 def save_to_csv(source, text):
     file_exists = os.path.isfile(CSV_FILE)
@@ -13,6 +14,7 @@ def save_to_csv(source, text):
         if not file_exists:
             writer.writerow(["timestamp", "source", "entry"])
         writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), source, text])
+
 
 root = tk.Tk()
 root.title("RTS-PAM-Agent")
@@ -38,6 +40,10 @@ def open_window(title):
     textbox = tk.Text(win, font=("Arial", 12), height=8, width=40)
     textbox.pack(padx=20)
 
+    tk.Label(
+        win, text="Currently Selected Text Macro: " + selected.get(), font=("Arial", 18)
+    ).pack(pady=(20, 10))
+
     def submit():
         text = textbox.get("1.0", tk.END).strip()
         if not text:
@@ -47,7 +53,9 @@ def open_window(title):
         textbox.delete("1.0", tk.END)
         messagebox.showinfo("Saved", f"Entry saved to entries.csv", parent=win)
 
-    tk.Button(win, text="Submit", font=("Arial", 14, "bold"), command=submit).pack(pady=10)
+    tk.Button(win, text="Submit", font=("Arial", 14, "bold"), command=submit).pack(
+        pady=10
+    )
 
 
 cli_btn = tk.Button(
@@ -76,6 +84,8 @@ aut_btn = tk.Button(
     pady=10,
     command=lambda: open_window("Automated Actions"),
 )
+
+
 def open_csv_window():
     win = tk.Toplevel(root)
     win.title("CSV Entries")
@@ -89,9 +99,19 @@ def open_csv_window():
     scrollbar = tk.Scrollbar(frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-    listbox = tk.Listbox(frame, font=("Arial", 11), yscrollcommand=scrollbar.set, width=80)
+    listbox = tk.Listbox(
+        frame, font=("Arial", 11), yscrollcommand=scrollbar.set, width=80
+    )
     listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     scrollbar.config(command=listbox.yview)
+
+    def on_select(event):
+        selection = listbox.curselection()
+        if selection:
+            value = listbox.get(selection[0])
+            print(value)
+
+    listbox.bind("<<ListboxSelect>>", on_select)
 
     if not os.path.isfile(CSV_FILE):
         listbox.insert(tk.END, "No entries yet.")
@@ -102,6 +122,7 @@ def open_csv_window():
                 listbox.insert(tk.END, "  |  ".join(row))
                 if i % 2 == 0:
                     listbox.itemconfig(i, bg="#f0f0f0")
+
 
 csv_btn = tk.Button(
     root,
