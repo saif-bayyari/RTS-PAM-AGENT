@@ -8,7 +8,7 @@ from tkinter import messagebox, ttk
 CSV_FILE = os.path.join(os.path.dirname(__file__), "entries.csv")
 
 
-all_entries = []
+all_entries = {}
 
 
 def normalize(text):
@@ -21,10 +21,8 @@ def normalize(text):
 
 
 def save_to_csv(source, text):
-    all_entries.append(normalize(text))
-    for entry in all_entries:  # one item per line
-        print(entry)
-
+    all_entries.update({str(len(all_entries)): normalize(text)})
+    print(all_entries)
     file_exists = os.path.isfile(CSV_FILE)
     with open(CSV_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -163,5 +161,16 @@ cli_btn.pack(expand=True)
 kb_btn.pack(expand=True)
 aut_btn.pack(expand=True)
 csv_btn.pack(expand=True)
+
+
+def load_records_from_csv():
+    if not os.path.isfile(CSV_FILE):
+        return
+    with open(CSV_FILE, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            record_id = int(row["record number"])
+            all_entries[record_id] = {"record number": row["entry"]}
+
 
 root.mainloop()
