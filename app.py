@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox, ttk
@@ -7,13 +8,36 @@ from tkinter import messagebox, ttk
 CSV_FILE = os.path.join(os.path.dirname(__file__), "entries.csv")
 
 
+all_entries = []
+
+
+def normalize(text):
+    text = text.strip()  # remove leading/trailing whitespace
+    text = re.sub(
+        r"\s+", " ", text
+    )  # collapse all internal whitespace/newlines to single space
+    text = text.encode("ascii", "ignore").decode()  # strip non-ascii characters
+    return text
+
+
 def save_to_csv(source, text):
+    all_entries.append(normalize(text))
+    for entry in all_entries:  # one item per line
+        print(entry)
+
     file_exists = os.path.isfile(CSV_FILE)
     with open(CSV_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         if not file_exists:
-            writer.writerow(["timestamp", "source", "entry"])
-        writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), source, text])
+            writer.writerow(["record number", "timestamp", "source", "entry"])
+        writer.writerow(
+            [
+                str(len(all_entries)),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                source,
+                text,
+            ]
+        )
 
 
 root = tk.Tk()
@@ -107,6 +131,8 @@ def open_csv_window():
 
     def on_select(event):
         selection = listbox.curselection()
+
+        # WHAT HAPPENS WHEN AN ITEM IS SELECTED (THE REACTION TO THE HIGHLIGHT ACTION FROM USER)
         if selection:
             value = listbox.get(selection[0])
             print(value)
