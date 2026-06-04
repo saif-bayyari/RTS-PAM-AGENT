@@ -170,7 +170,9 @@ def load_records_from_csv():
         reader = csv.DictReader(f)
         for row in reader:
             record_id = int(row["record number"])
-            all_entries[record_id] = {"record number": row["entry"]}
+            all_entries[record_id] = {str(record_id): row["entry"]}
 
+
+load_records_from_csv()
 
 root.mainloop()
