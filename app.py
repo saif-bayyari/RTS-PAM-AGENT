@@ -5,6 +5,9 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox, ttk
 
+from doc import TextExpanderTool
+from typing_extensions import Text
+
 CSV_FILE = os.path.join(os.path.dirname(__file__), "entries.csv")
 
 
@@ -51,11 +54,25 @@ selected = tk.StringVar(value="Option 1")
 # )
 # dropdown.pack(pady=20)
 
+open_windows = {}
+
 
 def open_window(title):
+    if title in open_windows and open_windows[title].winfo_exists():
+        open_windows[title].lift()
+        return
+
     win = tk.Toplevel(root)
     win.title(title)
     win.geometry("400x300")
+    open_windows[title] = win
+
+    def on_close():
+        print("hello world")
+        open_windows.pop(title, None)
+        win.destroy()
+
+    win.protocol("WM_DELETE_WINDOW", on_close)
 
     tk.Label(win, text=title, font=("Arial", 18, "bold")).pack(pady=(20, 10))
 
@@ -63,7 +80,9 @@ def open_window(title):
     textbox.pack(padx=20)
 
     tk.Label(
-        win, text="Currently Selected Text Macro: " + selected.get(), font=("Arial", 18)
+        win,
+        text="Currently Selected Text Macro: " + selected.get(),
+        font=("Arial", 18),
     ).pack(pady=(20, 10))
 
     def submit():
@@ -79,6 +98,15 @@ def open_window(title):
         pady=10
     )
 
+
+test_btn = tk.Button(
+    root,
+    text="open text expander",
+    font=("Arial", 24, "bold"),
+    padx=20,
+    pady=10,
+    command=lambda: TextExpanderTool(root),
+)
 
 cli_btn = tk.Button(
     root,
@@ -161,6 +189,7 @@ cli_btn.pack(expand=True)
 kb_btn.pack(expand=True)
 aut_btn.pack(expand=True)
 csv_btn.pack(expand=True)
+test_btn.pack(expand=True)
 
 
 def load_records_from_csv():
